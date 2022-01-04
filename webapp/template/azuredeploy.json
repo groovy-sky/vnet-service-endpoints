@@ -116,5 +116,15 @@
                 "isSwift": true
             }
         }
-    ]
+    ],
+    "outputs": {
+        "webAppUrl": {
+          "type": "string",
+          "value": "[reference(resourceId('Microsoft.Web/sites', variables('webName'))).defaultHostName]"
+        },
+        "subnetId":{
+            "type":"string",
+            "value":"[variables('subnetId')]"
+        }
+      }
 }
