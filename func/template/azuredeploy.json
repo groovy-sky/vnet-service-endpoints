@@ -16,12 +16,15 @@
       "metadata": {
         "description": "Location for all resources."
       }
+    },
+    "subnetResourceId":{
+      "type": "string"
     }
   },
   "variables": {
-    "functionAppName": "[concat('function-',uniquestring(resourceGroup().id))]",
-    "hostingPlanName": "[concat('appplan-',uniquestring(resourceGroup().id))]",
-    "storageAccountName": "[concat('storage',uniquestring(resourceGroup().id))]",
+    "functionAppName": "[concat('func-',uniquestring(subscription().subscriptionId,resourceGroup().id))]",
+    "hostingPlanName": "[concat('func-plan-',uniquestring(subscription().subscriptionId,resourceGroup().id))]",
+    "storageAccountName": "[concat('storage',uniquestring(subscription().subscriptionId,resourceGroup().id))]",
     "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
   },
   "resources": [
@@ -66,18 +69,26 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
         "siteConfig": {
+          "ipSecurityRestrictions": [
+                    {
+                        "vnetSubnetResourceId": "[parameters('subnetResourceId')]",
+                        "action": "Allow",
+                        "tag": "Default",
+                        "priority": 300,
+                        "name": "Allow VNet's Subnet"
+                    },
+                    {
+                        "ipAddress": "Any",
+                        "action": "Deny",
+                        "priority": 2147483647,
+                        "name": "Deny all",
+                        "description": "Deny all access"
+                    }
+                ],
           "appSettings": [
             {
               "name": "AzureWebJobsStorage",
               "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
-            },
-            {
-                "name": "FUNCTIONS_EXTENSION_VERSION",
-                "value": "~3"
-            },
-            {
-                "name": "FUNCTIONS_WORKER_RUNTIME",
-                "value": "python"
             }
           ]
         }
