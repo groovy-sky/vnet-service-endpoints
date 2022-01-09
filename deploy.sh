@@ -22,7 +22,7 @@ cd $web_folder/code
 
 echo "Web App deploy"
 
-web_arm_out=$(az deployment group create --resource-group $web_group --template-file azuredeploy.json | jq -r '. | .properties | .outputs')
+web_arm_out=$(az deployment group create --resource-group $web_group --template-file ../template/azuredeploy.json | jq -r '. | .properties | .outputs')
 
 subnet_id=$(echo $web_arm_out | jq -r '.subnetId.value')
 web_url=$(echo $web_arm_out | jq -r '.webAppUrl.value')
@@ -34,11 +34,13 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
+az webapp config appsettings set --name $web_name --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true
+
 az webapp up --sku S1 --name $web_name && cd ../..
 
-cd $func_folder/template
+cd $func_folder/code
 
-func_arm_out=$(az deployment group create --resource-group $func_group --template-file azuredeploy.json --parameters subnetResourceId=$subnet_id | jq -r '. | .properties | .outputs')
+func_arm_out=$(az deployment group create --resource-group $func_group --template-file ../template/azuredeploy.json --parameters subnetResourceId=$subnet_id | jq -r '. | .properties | .outputs')
 
 func_url=$(echo $func_arm_out | jq -r '.funcUrl.value')
 func_name=$(echo $func_arm_out | jq -r '.funcName.value')
