@@ -18,19 +18,17 @@ echo "Compile/build code"
 
 go build -o $func_folder/code/GoCustomHandler $func_folder/code/GoCustomHandler.go 
 
+cd $web_folder/code 
 
 echo "Web App deploy"
 
-web_arm_out=$(az deployment group create --resource-group $web_group --template-file $web_folder/template/azuredeploy.json | jq -r '. | .properties | .outputs')
+web_arm_out=$(az deployment group create --resource-group $web_group --template-file azuredeploy.json | jq -r '. | .properties | .outputs')
 
 subnet_id=$(echo $web_arm_out | jq -r '.subnetId.value')
 web_url=$(echo $web_arm_out | jq -r '.webAppUrl.value')
 web_name=$(echo $web_arm_out | jq -r '.webAppName.value')
 
-
 echo "Publish to Web App"
-
-cd $web_folder/code 
 
 python3 -m venv .venv
 source .venv/bin/activate
@@ -38,5 +36,11 @@ pip install -r requirements.txt
 
 az webapp up --sku S1 --name $web_name && cd ../..
 
-func_arm_out=$(az deployment group create --resource-group $func_group --template-file $func_folder/template/azuredeploy.json --parameters subnetResourceId=$subnet_id | jq -r '. | .properties | .outputs')
-#go build *.go && func azure functionapp publish $func_name --no-build --force
+cd $func_folder/template
+
+func_arm_out=$(az deployment group create --resource-group $func_group --template-file azuredeploy.json --parameters subnetResourceId=$subnet_id | jq -r '. | .properties | .outputs')
+
+func_url=$(echo $func_arm_out | jq -r '.funcUrl.value')
+func_name=$(echo $func_arm_out | jq -r '.funcName.value')
+
+func azure functionapp publish $func_name
