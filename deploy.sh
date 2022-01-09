@@ -17,9 +17,7 @@ cd vnet-service-endpoints && git pull
 echo "Compile/build code"
 
 go build -o $func_folder/code/GoCustomHandler $func_folder/code/GoCustomHandler.go 
-python3 -m venv $web_folder/code/.venv
-source $web_folder/code/.venv/bin/activate
-pip install -r $web_folder/code/requirements.txt
+
 
 echo "Web App deploy"
 
@@ -32,7 +30,13 @@ web_name=$(echo $web_arm_out | jq -r '.webAppName.value')
 
 echo "Publish to Web App"
 
-cd $web_folder/code && az webapp up --sku S1 --name $web_name && cd ../..
+cd $web_folder/code 
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+az webapp up --sku S1 --name $web_name && cd ../..
 
 func_arm_out=$(az deployment group create --resource-group $func_group --template-file $func_folder/template/azuredeploy.json --parameters subnetResourceId=$subnet_id | jq -r '. | .properties | .outputs')
 #go build *.go && func azure functionapp publish $func_name --no-build --force

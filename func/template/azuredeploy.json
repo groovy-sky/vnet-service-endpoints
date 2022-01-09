@@ -96,6 +96,10 @@
     }
   ],
       "outputs": {
+                "webAppUrl": {
+          "type": "string",
+          "value": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppName'))).defaultHostName]"
+        },
         "functionName": {
             "type": "string",
             "value": "[variables('functionAppName')]"
