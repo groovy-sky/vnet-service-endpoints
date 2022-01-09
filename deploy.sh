@@ -47,5 +47,8 @@ func_arm_out=$(az deployment group create --resource-group $func_group --templat
 func_url=$(echo $func_arm_out | jq -r '.funcUrl.value')
 func_name=$(echo $func_arm_out | jq -r '.funcName.value')
 
+az functionapp restart --name $func_name --resource-group $func_group
+
 func azure functionapp publish $func_name --custom
+
 curl https://$web_url?url=https://$func_url/api/httptrigger
