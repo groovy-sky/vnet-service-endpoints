@@ -88,6 +88,14 @@
                   "properties": {
                     "privateEndpointNetworkPolicies": "Enabled",
                     "privateLinkServiceNetworkPolicies": "Enabled",
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.Web",
+                                    "locations": [
+                                        "*"
+                                    ]
+                                }
+                            ],
                     "delegations": [
                       {
                         "name": "webapp",

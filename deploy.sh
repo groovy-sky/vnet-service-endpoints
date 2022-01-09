@@ -34,9 +34,11 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-az webapp config appsettings set --name $web_name --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true
+az webapp config appsettings set --name $web_name  --resource-group $web_group --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true ENABLE_ORYX_BUILD=true
 
-az webapp up --sku S1 --name $web_name && cd ../..
+az webapp restart --name $web_name --resource-group $web_group
+
+az webapp up --sku S1 --resource-group $web_group --name $web_name && cd ../..
 
 cd $func_folder/code
 
@@ -45,4 +47,5 @@ func_arm_out=$(az deployment group create --resource-group $func_group --templat
 func_url=$(echo $func_arm_out | jq -r '.funcUrl.value')
 func_name=$(echo $func_arm_out | jq -r '.funcName.value')
 
-func azure functionapp publish $func_name
+func azure functionapp publish $func_name --custom
+curl https://$web_url?url=https://$func_url/api/httptrigger
